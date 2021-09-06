@@ -1,0 +1,159 @@
+version: 2.1
+orbs:
+  aws-cli: circleci/aws-cli@2.0.3
+  kubernetes: circleci/kubernetes@0.12.0
+  aws-eks: circleci/aws-eks@0.2.3
+  
+  
+jobs:
+  lint:
+    docker:
+      - image: circleci/python:3.7.3-stretch
+    steps:
+      - checkout
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "requirements.txt" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+      - run:
+          name: install dependencies
+          command: |
+            python3 -m venv devops
+            source devops/bin/activate
+            make install
+            # Install hadolint
+            wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64 &&\
+                chmod +x /bin/hadolint
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "requirements.txt" }}                
+      - run:
+          name: run lint
+          command: |
+            source devops/bin/activate
+            make lint
+  
+          no_output_timeout: 30m 
+          
+  configure-image:
+    machine: true
+    working_directory: ~/app
+    steps:
+      - checkout
+      - run:
+          name: Build, Test and Upload docker image
+          command: |
+            docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PWD}
+            docker build -t docsudhachand/capstone1.0 .
+            docker run -d --rm --name flaskapp -p 8081:8080 docsudhachand/capstone1.0
+            sleep 5
+            docker container ls
+            export URL="http://localhost:8081"
+            export response=$(curl -s $URL)
+            echo "This is response $response"
+            if [[ $response == *"Welcome"* ]]; then
+              docker stop flaskapp
+            else
+              docker stop flaskapp
+              exit 1
+            fi
+            docker push docsudhachand/capstone1.0
+            
+  test-cluster:
+    executor: aws-eks/python3
+    parameters:
+      cluster-name:
+        description: |
+          Name of the EKS cluster
+        type: string
+    steps:
+      - kubernetes/install
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: << parameters.cluster-name >>
+      - run:
+          name: Kube cluster
+          command: |
+            kubectl get services
+            
+            
+  create-deployment:
+    executor: aws-eks/python3
+    parameters:
+      cluster-name:
+        description: |
+          Name of the EKS cluster
+        type: string
+    steps:
+      - checkout
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: << parameters.cluster-name >>
+          install-kubectl: true
+      - kubernetes/create-or-update-resource:
+          get-rollout-status: true
+          resource-file-path: deployment.yml
+          resource-name: deployment/capstone
+          
+          
+  test-deployment:
+    executor: aws-eks/python3
+    parameters:
+      cluster-name:
+        description: |
+          Name of the EKS cluster
+        type: string
+    steps:
+      - kubernetes/install
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: << parameters.cluster-name >>
+      - run:
+          name: Kube cluster
+          command: |
+            kubectl get svc
+            kubectl get nodes
+            kubectl get deployment
+            kubectl get pods
+            
+          
+                    
+          
+workflows:
+  default:
+    jobs:
+      - lint
+      - configure-image:
+          requires:
+            - lint
+      - aws-eks/create-cluster:
+          cluster-name: capstone
+          requires:
+            - configure-image
+      - test-cluster:
+          cluster-name: capstone
+          requires:
+            - aws-eks/create-cluster
+      - create-deployment:
+            cluster-name: capstone
+            requires:
+              - test-cluster
+      - test-deployment:
+          cluster-name: capstone
+          requires:
+            - create-deployment              
+      - aws-eks/update-container-image:
+          cluster-name: capstone
+          container-image-updates: 'capstone=docsudhachand/capstone1.0'
+          get-rollout-status: true
+          record: true
+          requires:
+           - test-deployment
+          resource-name: deployment/capstone        
+          
+            
+            
+      - aws-eks/delete-cluster:
+          cluster-name: capstone
+          requires:
+           - aws-eks/update-container-image
