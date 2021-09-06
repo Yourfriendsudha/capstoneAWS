@@ -44,8 +44,8 @@ jobs:
           name: Build, Test and Upload docker image
           command: |
             docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PWD}
-            docker build -t docsudhachand/capstone1.0 .
-            docker run -d --rm --name flaskapp -p 8081:8080 docsudhachand/capstone1.0
+            docker build -t docsudhachand/capstone:1.0 .
+            docker run -d --rm --name flaskapp -p 8081:8080 docsudhachand/capstone:1.0
             sleep 5
             docker container ls
             export URL="http://localhost:8081"
@@ -57,8 +57,43 @@ jobs:
               docker stop flaskapp
               exit 1
             fi
-            docker push docsudhachand/capstone1.0
-            
+            docker push docsudhachand/capstone:1.0
+  aws-eks/create-cluster:
+    executor: aws-eks/python3
+    parameters:
+      cluster-name:
+        description: |
+          Name of the EKS cluster
+        type: string
+    steps:
+      - checkout
+      - aws-eks/install-aws-iam-authenticator:
+          release-tag: ''
+      - run:
+          name: Install the eksctl tool
+          command: |
+            if which eksctl > /dev/null; then
+            echo "eksctl is already installed"
+            exit 0
+            fi
+            mkdir -p eksctl_download
+            curl --silent --location --retry 5 "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C eksctl_download
+            chmod +x eksctl_download/eksctl
+            SUDO=""
+            if [ $(id -u) -ne 0 ] && which sudo > /dev/null ; then
+            SUDO="sudo"
+            fi
+            $SUDO mv eksctl_download/eksctl /usr/local/bin/
+            rmdir eksctl_download
+      - aws-eks/create-cluster:
+          cluster-name: << parameters.cluster-name >>
+          skip-kubectl-install: false
+          verbose: 3
+          node-type: t2.small
+          nodes-max: 2
+          ssh-access: false
+          ssh-public-key: ''    
+
   test-cluster:
     executor: aws-eks/python3
     parameters:
@@ -141,15 +176,12 @@ workflows:
             - create-deployment              
       - aws-eks/update-container-image:
           cluster-name: capstone
-          container-image-updates: 'capstone=docsudhachand/capstone1.0'
+          container-image-updates: 'capstone=docsudhachand/capstone:1.0'
           get-rollout-status: true
           record: true
           requires:
            - test-deployment
-          resource-name: deployment/capstone        
-          
-            
-            
+          resource-name: deployment/capstone                                          
       - aws-eks/delete-cluster:
           cluster-name: capstone
           requires:
