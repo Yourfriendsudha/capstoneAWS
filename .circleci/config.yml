@@ -112,8 +112,8 @@ jobs:
             kubectl get deployment
             kubectl get pods
 
- 
-                                              
+
+
 workflows:
   default:
     jobs:
@@ -127,8 +127,8 @@ workflows:
             - configure-image
       - test-cluster:
           cluster-name: capstone
-            requires:
-             - aws-eks/create-cluster
+          requires:
+            - aws-eks/create-cluster
       - create-deployment:
             cluster-name: capstone
             requires:
