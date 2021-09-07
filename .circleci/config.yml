@@ -3,7 +3,7 @@ orbs:
   aws-eks: circleci/aws-eks@dev:alpha
   cli: circleci/circleci-cli@0.1.2
   kubernetes: circleci/kubernetes@0.11.0
-  aws-cli: circleci/aws-cli@2.1.29
+  aws-cli: circleci/aws-cli@2.0.3
     
 jobs:
   lint:
