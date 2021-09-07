@@ -1,1 +1,1 @@
-https://hub.docker.com/repository/docker/docsudhachand/capstone:2.0
+https://hub.docker.com/repository/docker/docsudhachand/capstoneaws:2.0
