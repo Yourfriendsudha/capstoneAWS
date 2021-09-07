@@ -129,8 +129,8 @@ workflows:
       #       - aws-eks/create-cluster
       - create-deployment:
             cluster-name: capstone
-            requires:
-              - test-cluster
+            # requires:
+            #   - test-cluster
       - test-deployment:
           cluster-name: capstone
           requires:
@@ -140,6 +140,11 @@ workflows:
           container-image-updates: 'capstone=docsudhachand/capstone:2.0'
           get-rollout-status: true
           record: true
+          post-steps:
+            - kubernetes/delete-resource:
+                resource-names: capstone
+                resource-types: deployment
+                wait: true
           requires:
            - test-deployment
           resource-name: deployment/capstone                                          
