@@ -120,14 +120,14 @@ workflows:
       - configure-image:
           requires:
             - lint
-      - aws-eks/create-cluster:
-          cluster-name: capstoneaws
-          requires:
-            - configure-image
+      # - aws-eks/create-cluster:
+      #     cluster-name: capstoneaws
+      #     requires:
+      #       - configure-image
       - test-cluster:
           cluster-name: capstoneaws
-          requires:
-            - aws-eks/create-cluster
+          # requires:
+          #   - aws-eks/create-cluster
       - create-deployment:
           cluster-name: capstoneaws
           requires:
@@ -144,7 +144,7 @@ workflows:
           requires:
            - test-deployment
           resource-name: deployment/capstoneaws                                          
-      - aws-eks/delete-cluster:
-          cluster-name: capstoneaws
-          requires:
-           - aws-eks/update-container-image
+      # - aws-eks/delete-cluster:
+      #     cluster-name: capstoneaws
+      #     requires:
+      #      - aws-eks/update-container-image
