@@ -119,14 +119,14 @@ workflows:
       - configure-image:
           requires:
             - lint
-      # - aws-eks/create-cluster:
-      #     cluster-name: capstone
-      #     requires:
-      #       - configure-image
-      # - test-cluster:
-      #     cluster-name: capstone
-      #     requires:
-      #       - aws-eks/create-cluster
+      - aws-eks/create-cluster:
+          cluster-name: capstone
+          requires:
+            - configure-image
+      - test-cluster:
+          cluster-name: capstone
+          requires:
+            - aws-eks/create-cluster
       - create-deployment:
             cluster-name: capstone
             requires:
