@@ -1,0 +1,2 @@
+https://hub.docker.com/repository/docker/docsudhachand/capstoneaws:3.0
+https://github.com/Yourfriendsudha/capstoneAWS.git
