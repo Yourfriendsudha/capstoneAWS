@@ -1,4 +1,3 @@
-[![Yourfriendsudha](https://circleci.com/gh/Yourfriendsudha/capstoneAWS.svg?style=svg)](https://circleci.com/gh/Yourfriendsudha/capstoneAWS)
 
 ## Project Overview
 
