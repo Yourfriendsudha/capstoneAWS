@@ -1,2 +1,9 @@
-https://hub.docker.com/repository/docker/docsudhachand/capstoneaws:3.0
+Source code : 
 https://github.com/Yourfriendsudha/capstoneAWS.git
+
+Docker hub url :
+https://hub.docker.com/repository/docker/docsudhachand/capstoneaws:3.0
+
+
+API url: 
+http://a574bc4661102405ea02f2f7531c0f4b-1691105849.us-west-1.elb.amazonaws.com:8080/home
