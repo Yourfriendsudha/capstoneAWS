@@ -129,8 +129,8 @@ workflows:
       #       - aws-eks/create-cluster
       - create-deployment:
             cluster-name: capstone
-            # requires:
-            #   - test-cluster
+            requires:
+              - configure-image
       - test-deployment:
           cluster-name: capstone
           requires:
