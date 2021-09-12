@@ -126,23 +126,23 @@ workflows:
       #       - configure-image
       - test-cluster:
           cluster-name: capstoneaws
-          requires:
-            - aws-eks/create-cluster
-      - create-deployment:
-          cluster-name: capstoneaws
-          requires:
-            - test-cluster
-      - test-deployment:
-          cluster-name: capstoneaws
-          requires:
-            - create-deployment              
-      - aws-eks/update-container-image:
-          cluster-name: capstoneaws
-          container-image-updates: 'capstoneaws=docsudhachand/capstoneaws:3.0'
-          get-rollout-status: true
-          record: true
-          requires:
-           - test-deployment
-          resource-name: deployment/capstoneaws                                          
+      #     requires:
+      #       - aws-eks/create-cluster
+      # - create-deployment:
+      #     cluster-name: capstoneaws
+      #     requires:
+      #       - test-cluster
+      # - test-deployment:
+      #     cluster-name: capstoneaws
+      #     requires:
+      #       - create-deployment              
+      # - aws-eks/update-container-image:
+      #     cluster-name: capstoneaws
+      #     container-image-updates: 'capstoneaws=docsudhachand/capstoneaws:3.0'
+      #     get-rollout-status: true
+      #     record: true
+      #     requires:
+      #      - test-deployment
+      #     resource-name: deployment/capstoneaws                                          
       - aws-eks/delete-cluster:
           cluster-name: capstoneaws
