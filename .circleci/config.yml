@@ -141,8 +141,6 @@ workflows:
           container-image-updates: 'capstoneaws=docsudhachand/capstoneaws:3.0'
           get-rollout-status: true
           record: true
-          requires:
-           - test-deployment
           resource-name: deployment/capstoneaws                                          
       - aws-eks/delete-cluster:
           cluster-name: capstoneaws
